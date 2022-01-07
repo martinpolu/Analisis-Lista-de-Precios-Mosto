@@ -8,9 +8,9 @@ separador = "\n"
 pagina=[]
 dict=[]
 
-
+path=r'PDF\20220104 Lista Distribucion.pdf'
 # Lista 6 primera de 2021
-with pdfplumber.open('PDF\H20211220 Lista Distribucion.pdf') as pdf:
+with pdfplumber.open(path) as pdf:
     for i in range(len(pdf.pages)):
         pagina = pdf.pages[i]
         lista = pagina.extract_text().split(separador)
@@ -35,4 +35,4 @@ with pdfplumber.open('PDF\H20211220 Lista Distribucion.pdf') as pdf:
                     linearecor[1]=linearecor[1].replace(",","")
                 dict.append({"Producto":(linearecor)[0],"Precio":float(linearecor[1])})
 Dataframe1= pd.DataFrame(dict)
-print(Dataframe1)
+Dataframe1.to_excel("PDF\output1.xlsx")
