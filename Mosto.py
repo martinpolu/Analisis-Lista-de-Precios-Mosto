@@ -1,14 +1,25 @@
 import pdfplumber
 import re
 import pandas as pd
+import locale
 from datetime import datetime
+from os import listdir
 pd.set_option('display.max_rows',1600)
 pd.set_option('display.max_columns',5)
+locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 separador = "\n"
 pagina=[]
 dict=[]
 
-path=r'PDF\20220104 Lista Distribucion.pdf'
+print("Elija la lista de precios para comparar: ")
+for f,item in enumerate(listdir("PDF")):
+    if(".pdf" in item):
+        date_time_obj = datetime.strptime(item, '%Y%m%d Lista Distribucion.pdf')
+        print(str(f)+date_time_obj.strftime('  Lista %d de %B %Y'))
+opcion=input()
+path= "PDF\\"
+print(listdir("PDF"))
+path=path+listdir("PDF")[int(opcion)]
 # Lista 6 primera de 2021
 with pdfplumber.open(path) as pdf:
     for i in range(len(pdf.pages)):
@@ -35,4 +46,4 @@ with pdfplumber.open(path) as pdf:
                     linearecor[1]=linearecor[1].replace(",","")
                 dict.append({"Producto":(linearecor)[0],"Precio":float(linearecor[1])})
 Dataframe1= pd.DataFrame(dict)
-Dataframe1.to_excel("PDF\output1.xlsx")
+Dataframe1.to_excel("PDF\\"+listdir("PDF")[int(opcion)][:-4]+".xlsx")
