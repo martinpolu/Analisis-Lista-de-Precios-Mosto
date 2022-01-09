@@ -1,5 +1,8 @@
 import pdfplumber
 import re
+import sqlite3
+
+
 from datetime import datetime
 
 separador = "\n"
@@ -30,5 +33,14 @@ def HallarDataframe(path):
                         linearecor=linearecor1
                     else:
                         linearecor[1]=linearecor[1].replace(",","")
-                    dict.append({"Producto":(linearecor)[0],"Precio "+Fecha1.strftime('%d de %B %Y'):float(linearecor[1])})
+                    dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
     return dict
+
+def GenerarSQL(Listado):
+    conn = sqlite3.connect('ListaDePrecios.db')
+    c = conn.cursor()
+    Listado.to_sql(name='stocks', con=conn, if_exists='append', index=False)
+    cursor = c.execute('select * from stocks')
+    for column in cursor.description:
+        print(column[0])
+    conn.commit()
