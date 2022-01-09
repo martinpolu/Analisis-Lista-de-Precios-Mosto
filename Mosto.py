@@ -17,7 +17,6 @@ pd.set_option('display.max_columns',5)
 locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 separador = "\n"
 pagina=[]
-dict=[]
 
 print("Elija las listas de precios para comparar: ")
 ListaDeArchivos=listdir((RelativePath)+"/PDF")

@@ -1,8 +1,10 @@
 import pdfplumber
 import re
-
 from datetime import datetime
+
 separador = "\n"
+
+
 def HallarDataframe(path):
     dict=[]
     with pdfplumber.open(path) as pdf:
