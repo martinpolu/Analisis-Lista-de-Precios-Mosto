@@ -1,8 +1,10 @@
 import pdfplumber
 import re
 import sqlite3
+import pathlib
 
 
+RelativePath=str(pathlib.Path(__file__).parent.resolve())
 from datetime import datetime
 
 separador = "\n"
@@ -36,8 +38,10 @@ def HallarDataframe(path):
                     dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
     return dict
 
+
+
 def GenerarSQL(Listado):
-    conn = sqlite3.connect('ListaDePrecios.db')
+    conn = sqlite3.connect(RelativePath+"/PDF/ListaDePrecios.db")
     c = conn.cursor()
     Listado.to_sql(name='stocks', con=conn, if_exists='append', index=False)
     cursor = c.execute('select * from stocks')
