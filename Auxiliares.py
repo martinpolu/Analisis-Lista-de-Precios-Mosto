@@ -26,24 +26,35 @@ def HallarDataframe(path):
                     a=(re.findall("[0-9]+",lista[j]))
                     codigo=a[0]
                     linearecor=lista[j][len(a[0])+1:]
-                    linearecor=linearecor.split("  ")
-                    if(len(linearecor)>2):
-                        linearecor1=["",""]
-                        for k in range(len(linearecor)-1):
-                            linearecor1[0]=linearecor1[0]+linearecor[k]+" "
-                        linearecor1[1]=linearecor[len(linearecor)-1].replace(",","")
-                        linearecor=linearecor1
+                    if(Fecha1<datetime(2021,11,2)):
+                        producto=linearecor[1:59]
+                        producto=producto.split("   ")
+                        producto=producto[0]
+                        precio=linearecor[58:70]
+                        precio=float(precio.replace(",","."))
+                        proveedor=linearecor[70:]
+                        # print(precio)
+                        # print(proveedor)
+                        dict.append({"Producto":producto,Fecha1.strftime('%d/%m/%Y'):precio})
                     else:
-                        linearecor[1]=linearecor[1].replace(",","")
-                    dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
+                        if(len(linearecor)>2):
+                            linearecor1=["",""]
+                            for k in range(len(linearecor)-1):
+                                linearecor1[0]=linearecor1[0]+linearecor[k]+" "
+                            linearecor1[1]=linearecor[len(linearecor)-1].replace(",","")
+                            linearecor=linearecor1
+                        else:
+                            linearecor[1]=linearecor[1].replace(",","")
+                        print(linearecor)
+                        dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
     return dict
 
 
 
 def GenerarSQL(Listado):
+    print(Listado)
     conn = sqlite3.connect(RelativePath+"/PDF/ListaDePrecios.db")
     c = conn.cursor()
-    Listado.to_sql(name='stocks', con=conn, if_exists='append', index=False)
     cursor = c.execute('select * from stocks')
     for column in cursor.description:
         print(column[0])
