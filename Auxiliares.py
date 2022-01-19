@@ -71,7 +71,7 @@ def GenerarSQL(Listado):
     c = conn.cursor()
 
     c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='stocks' ''')
-
+    
     #if the count is 1, then table exists
     if c.fetchone()[0]==1 :
         print('La tabla ahora hay que chequear si la columna ya existe en la tabla')
@@ -88,6 +88,11 @@ def GenerarSQL(Listado):
             results.set_index('Producto',inplace=True)
             Listado.set_index('Producto',inplace=True)
             result = pd.concat([results, Listado], axis=1, join="outer")
+            results.to_excel(RelativePath+"/PDF/Lectura.xlsx")
+            Listado.set_index('Producto',inplace=True)
+            Listado.to_excel(RelativePath+"/PDF/Listado.xlsx")
+            result = pd.concat([results, Listado], axis=1, join="inner")
+            result.to_excel(RelativePath+"/PDF/Acoplado.xlsx")
             result.to_sql(name='stocks', con=conn, if_exists='replace', index=True)
         else:
             print("Si existia, entonces no hacemos nada.")
