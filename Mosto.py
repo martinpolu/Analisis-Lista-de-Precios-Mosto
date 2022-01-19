@@ -27,4 +27,3 @@ for f,item in enumerate(ListaDeArchivos):
         print(path)
         Dataframe1= pd.DataFrame(HallarDataframe(path))
         GenerarSQL(Dataframe1)
-        Dataframe1.set_index('Producto',inplace=True)

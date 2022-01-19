@@ -2,6 +2,7 @@ import pdfplumber
 import re
 import sqlite3
 import pathlib
+import pandas as pd
 
 
 RelativePath=str(pathlib.Path(__file__).parent.resolve())
@@ -33,8 +34,6 @@ def HallarDataframe(path):
                         precio=linearecor[58:70]
                         precio=float(precio.replace(",","."))
                         proveedor=linearecor[70:]
-                        # print(precio)
-                        # print(proveedor)
                         dict.append({"Producto":producto,Fecha1.strftime('%d/%m/%Y'):precio})
                     else:
                         if(len(linearecor)>2):
@@ -52,10 +51,26 @@ def HallarDataframe(path):
 
 
 def GenerarSQL(Listado):
-    print(Listado)
     conn = sqlite3.connect(RelativePath+"/PDF/ListaDePrecios.db")
     c = conn.cursor()
-    cursor = c.execute('select * from stocks')
-    for column in cursor.description:
-        print(column[0])
+
+    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='stocks' ''')
+
+    #if the count is 1, then table exists
+    if c.fetchone()[0]==1 :
+        print('La tabla ahora hay que chequear si la columna ya existe en la tabla')
+        cursor = c.execute('select * from stocks')
+        if(not list(Listado.columns.values)[1] in cursor.description[1]):
+            print("No esta la fecha en la columna")
+            cols = [column[0] for column in cursor.description]
+            results = pd.DataFrame.from_records(data = cursor.fetchall(), columns = cols)
+            results.set_index('Producto',inplace=True)
+            Listado.set_index('Producto',inplace=True)
+            result = pd.concat([results, Listado], axis=1, join="inner")
+            result.to_sql(name='stocks', con=conn, if_exists='replace', index=True)
+        else:
+            print("Si existia, entonces no hacemos nada.")
+    else:
+        print("La tabla no existe, debemos crearla con el dataframe.")
+        Listado.to_sql(name='stocks', con=conn, if_exists='replace', index=False)
     conn.commit()
