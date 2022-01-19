@@ -9,7 +9,6 @@ from datetime import datetime
 from os import listdir
 
 RelativePath=str(pathlib.Path(__file__).parent.resolve())
-
 pd.set_option('display.max_rows',1600)
 pd.set_option('display.max_columns',5)
 locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
