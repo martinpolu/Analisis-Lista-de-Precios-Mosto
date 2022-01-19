@@ -79,7 +79,9 @@ def GenerarSQL(Listado):
         cursor=c.execute('''SELECT * FROM stocks''')
         for column in cursor.description:
             Columnas.append(column[0])
-        print(Columnas)
+        Columnas=Columnas[1:]
+        sorted(Columnas, key=lambda x: datetime.strptime(x, '%d/%m/%Y'))
+        Columnas.insert(0,"Producto")
         cursor = c.execute('select * from stocks')
         if(not list(Listado.columns.values)[1] in Columnas):
             print("No esta la fecha en la columna")
