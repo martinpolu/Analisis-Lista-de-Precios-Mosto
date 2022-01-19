@@ -78,10 +78,6 @@ def GenerarSQL(Listado):
     #if the count is 1, then table exists
     if c.fetchone()[0]==1 :
         print('La tabla ahora hay que chequear si la columna ya existe en la tabla')
-<<<<<<< HEAD
-        cursor = c.execute('select * from stocks')
-        if(not list(Listado.columns.values)[1] in cursor.description[1]):
-=======
         print(list(Listado.columns.values)[1])
         cursor=c.execute('''SELECT * FROM stocks''')
         for column in cursor.description:
@@ -89,21 +85,12 @@ def GenerarSQL(Listado):
         print(Columnas)
         cursor = c.execute('select * from stocks')
         if(not list(Listado.columns.values)[1] in Columnas):
->>>>>>> PruebaDataBase
             print("No esta la fecha en la columna")
             cols = [column[0] for column in cursor.description]
             results = pd.DataFrame.from_records(data = cursor.fetchall(), columns = cols)
             results.set_index('Producto',inplace=True)
-<<<<<<< HEAD
-            results.to_excel(RelativePath+"/PDF/Lectura.xlsx")
-            Listado.set_index('Producto',inplace=True)
-            Listado.to_excel(RelativePath+"/PDF/Listado.xlsx")
-            result = pd.concat([results, Listado], axis=1, join="inner")
-            result.to_excel(RelativePath+"/PDF/Acoplado.xlsx")
-=======
             Listado.set_index('Producto',inplace=True)
             result = pd.concat([results, Listado], axis=1, join="outer")
->>>>>>> PruebaDataBase
             result.to_sql(name='stocks', con=conn, if_exists='replace', index=True)
         else:
             print("Si existia, entonces no hacemos nada.")
