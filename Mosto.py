@@ -15,25 +15,12 @@ locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 pagina=[]
 
 print("Elija las listas de precios para comparar: ")
-ListaDeArchivos=listdir((RelativePath)+"/PDF")
+ListaDeArchivos=listdir((RelativePath)+"/PDF") 
 for f,item in enumerate(ListaDeArchivos):
     if(".pdf" in item):
         date_time_obj = datetime.strptime(item, '%Y%m%d Lista Distribucion.pdf')
         print(str(f)+date_time_obj.strftime('  Lista %d de %B %Y'))
-opcion=input()
-opcion2=input()
-path=RelativePath+"/PDF/"+ListaDeArchivos[int(opcion)]
-path2=RelativePath+"/PDF/"+ListaDeArchivos[int(opcion2)]
-print(path)
-
-
-Dataframe1= pd.DataFrame(HallarDataframe(path))
-Dataframe2= pd.DataFrame(HallarDataframe(path2))
-
-GenerarSQL(Dataframe1)
-
-Dataframe1.set_index('Producto',inplace=True)
-Dataframe2.set_index('Producto',inplace=True)
-
-result = pd.concat([Dataframe1, Dataframe2], axis=1, join="inner")
-result.to_excel(RelativePath+"/PDF/Comparativa.xlsx")
+        path=RelativePath+"/PDF/"+ListaDeArchivos[int(f)]
+        print(path)
+        Dataframe1= pd.DataFrame(HallarDataframe(path))
+        GenerarSQL(Dataframe1)
