@@ -4,7 +4,6 @@ import sqlite3
 import pathlib
 import pandas as pd
 
->>>>>>> PruebaDataBase
 
 RelativePath=str(pathlib.Path(__file__).parent.resolve())
 from datetime import datetime
