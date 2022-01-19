@@ -16,13 +16,11 @@ locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 pagina=[]
 
 print("Elija las listas de precios para comparar: ")
-ListaDeArchivos=listdir((RelativePath)+"/PDF")
+ListaDeArchivos=listdir((RelativePath)+"/PDF") 
 for f,item in enumerate(ListaDeArchivos):
     if(".pdf" in item):
         date_time_obj = datetime.strptime(item, '%Y%m%d Lista Distribucion.pdf')
         print(str(f)+date_time_obj.strftime('  Lista %d de %B %Y'))
-        if(date_time_obj<datetime(2021, 11, 2) ):
-            print("Verdadero")
         path=RelativePath+"/PDF/"+ListaDeArchivos[int(f)]
         print(path)
         Dataframe1= pd.DataFrame(HallarDataframe(path))
