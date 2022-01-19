@@ -3,8 +3,6 @@ import re
 import sqlite3
 import pathlib
 import pandas as pd
-<<<<<<< HEAD
-=======
 
 >>>>>>> PruebaDataBase
 
