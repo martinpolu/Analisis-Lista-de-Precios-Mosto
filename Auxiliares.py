@@ -14,20 +14,21 @@ separador = "\n"
 def HallarDataframe(path):
     dict=[]
     with pdfplumber.open(path) as pdf:
-        for i in range(len(pdf.pages)):
+        for i in range(len(pdf.pages)): #Leemos todas las páginas
             pagina = pdf.pages[i]
-            lista = pagina.extract_text().split(separador)
+            lista = pagina.extract_text().split(separador) #Leemos cada pagina utilizando como separador el salto de linea
             for j in range(len(lista)):
-                pattern="Fecha: [0-9]+/+[0-9]+/[0-9]+"
+                pattern="Fecha: [0-9]+/+[0-9]+/[0-9]+" #Buscamos la fecha dentro de la lista de precios
                 FechaProv1 = re.search(pattern, lista[j])
                 if FechaProv1:
-                    Fecha1 = datetime.strptime((FechaProv1.group(0)), 'Fecha: %d/%m/%Y')
-                pattern = re.compile("[0-9]+.+  [0-9,.]+")
+                    Fecha1 = datetime.strptime((FechaProv1.group(0)), 'Fecha: %d/%m/%Y')#Asignamos la fecha
+                pattern = re.compile("[0-9]+.+  [0-9,.]+")#Buscamos el formato de producto y precio dentro de la lista.
                 if(pattern.match(lista[j]))!=None:
                     a=(re.findall("[0-9]+",lista[j]))
                     codigo=a[0]
                     linearecor=lista[j][len(a[0])+1:]
                     if(Fecha1<datetime(2021,11,4)):
+                        # print("CASO A") #Este caso es para la primera lista de precios
                         producto=linearecor[1:59]
                         producto=producto.split("   ")
                         producto=producto[0]
@@ -36,11 +37,13 @@ def HallarDataframe(path):
                         proveedor=linearecor[70:]
                         dict.append({"Producto":producto,Fecha1.strftime('%d/%m/%Y'):precio})
                     if(Fecha1<datetime(2021,11,30) and Fecha1>datetime(2021,11,5)):
+                        # print("CASO B")
                         linearecor=linearecor.split("  ")
                         if(len(linearecor)>2):
                             linearecor1=["",""]
-                            for k in range(len(linearecor)-1):
+                            for k in range(len(linearecor)-2):
                                 linearecor1[0]=linearecor1[0]+linearecor[k]+" "
+                            linearecor1[0]=linearecor1[0]+linearecor[k+1]
                             linearecor1[1]=linearecor[len(linearecor)-1].replace(",","")
                             linearecor=linearecor1
                         else:
@@ -49,16 +52,18 @@ def HallarDataframe(path):
                         dict.append({"Producto":(linearecor)[0][:-4],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
 
                     if(Fecha1>datetime(2021,11,30)):
+                        # print("CASO C")
                         linearecor=linearecor.split("  ")
                         if(len(linearecor)>2):
                             linearecor1=["",""]
-                            for k in range(len(linearecor)-1):
+                            for k in range(len(linearecor)-2):
                                 linearecor1[0]=linearecor1[0]+linearecor[k]+" "
+                            linearecor1[0]=linearecor1[0]+linearecor[k+1]
                             linearecor1[1]=linearecor[len(linearecor)-1].replace(",","")
                             linearecor=linearecor1
                         else:
                             linearecor[1]=linearecor[1].replace(",","")
-                        # print(linearecor)
+                        print(linearecor)
                         dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
 
     return dict
@@ -89,7 +94,9 @@ def GenerarSQL(Listado):
             results = pd.DataFrame.from_records(data = cursor.fetchall(), columns = cols)
             results.set_index('Producto',inplace=True)
             Listado.set_index('Producto',inplace=True)
-            result = pd.concat([results, Listado], axis=1, join="outer")
+            result = pd.merge(results, Listado, how="outer", on=["Producto"])
+            # result = pd.concat([results, Listado], axis=1, join="outer")
+            # print(result)
             result.to_sql(name='stocks', con=conn, if_exists='replace', index=True)
         else:
             print("Si existia, entonces no hacemos nada.")
