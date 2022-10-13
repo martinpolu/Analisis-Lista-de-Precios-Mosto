@@ -15,26 +15,23 @@ def HallarDataframe(path):
     dict=[]
     with pdfplumber.open(path) as pdf:
         for i in range(len(pdf.pages)): #Leemos todas las páginas
+            patternFecha="Fecha: [0-9]+/+[0-9]+/[0-9]+" #Buscamos la fecha dentro de la lista de precios
+            FechaProv1=0
             pagina = pdf.pages[i]
             lista = pagina.extract_text().split(separador) #Leemos cada pagina utilizando como separador el salto de linea
             for j in range(len(lista)):
-                pattern="Fecha: [0-9]+/+[0-9]+/[0-9]+" #Buscamos la fecha dentro de la lista de precios
-                FechaProv1 = re.search(pattern, lista[j])
-                if FechaProv1:
-                    Fecha1 = datetime.strptime((FechaProv1.group(0)), 'Fecha: %d/%m/%Y')#Asignamos la fecha
+                if FechaProv1==0:
+                    FechaProv1 = re.search(patternFecha, lista[j])
+                    if FechaProv1:
+                        Fecha1 = datetime.strptime((FechaProv1.group(0)), 'Fecha: %d/%m/%Y')#Asignamos la fecha
                 pattern = re.compile("[0-9]+.+  [0-9,.]+")#Buscamos el formato de producto y precio dentro de la lista.
                 if(pattern.match(lista[j]))!=None:
                     a=(re.findall("[0-9]+",lista[j]))
-                    codigo=a[0]
                     linearecor=lista[j][len(a[0])+1:]
                     if(Fecha1<datetime(2021,11,4)):
                         # print("CASO A") #Este caso es para la primera lista de precios
-                        producto=linearecor[1:59]
-                        producto=producto.split("   ")
-                        producto=producto[0]
-                        precio=linearecor[58:70]
-                        precio=float(precio.replace(",","."))
-                        proveedor=linearecor[70:]
+                        producto=linearecor[1:59].split("   ")[0]
+                        precio=float(linearecor[58:70].replace(",","."))
                         dict.append({"Producto":producto,Fecha1.strftime('%d/%m/%Y'):precio})
                     if(Fecha1<datetime(2021,11,30) and Fecha1>datetime(2021,11,5)):
                         # print("CASO B")
@@ -65,7 +62,6 @@ def HallarDataframe(path):
                             linearecor[1]=linearecor[1].replace(",","")
                         print(linearecor)
                         dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
-
     return dict
 
 
@@ -74,12 +70,9 @@ def GenerarSQL(Listado):
     Columnas=[]
     conn = sqlite3.connect(RelativePath+"/PDF/ListaDePrecios.db")
     c = conn.cursor()
-
     c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='stocks' ''')
-
     #if the count is 1, then table exists
     if c.fetchone()[0]==1 :
-        print('La tabla ahora hay que chequear si la columna ya existe en la tabla')
         print(list(Listado.columns.values)[1])
         cursor=c.execute('''SELECT * FROM stocks''')
         for column in cursor.description:
@@ -99,7 +92,21 @@ def GenerarSQL(Listado):
             # print(result)
             result.to_sql(name='stocks', con=conn, if_exists='replace', index=True)
         else:
-            print("Si existia, entonces no hacemos nada.")
+            cursor = c.execute('select Producto, "'+list(Listado.columns.values)[1]+'" from stocks')
+            cols=["Producto",list(Listado.columns.values)[1]]
+            results = pd.DataFrame.from_records(data = cursor.fetchall(), columns = cols)
+            results=results.dropna()
+            results.sort_values(by=['Producto'],inplace=True)
+            Listado.sort_values(by=['Producto'],inplace=True)
+            results=results.reset_index(drop=True)
+            Listado=results.reset_index(drop=True)
+            if (results.equals(Listado))==True:
+                print("Son iguales")
+            else:
+                print("WARNING")
+                Listado.to_excel(r'PDF\Listado.xlsx')
+                results.to_excel(r'PDF\results.xlsx')
+                print(results)
     else:
         print("La tabla no existe, debemos crearla con el dataframe.")
         Listado.to_sql(name='stocks', con=conn, if_exists='replace', index=False)

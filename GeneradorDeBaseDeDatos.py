@@ -15,11 +15,15 @@ locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 pagina=[]
 
 ListaDeArchivos=listdir((RelativePath)+"/PDF")
+ListaDeFechas=[]
 for f,item in enumerate(ListaDeArchivos):
     if(".pdf" in item):
         date_time_obj = datetime.strptime(item, '%Y%m%d Lista Distribucion.pdf') #Identifica la fecha de la lista de precios.
-        print(str(f)+date_time_obj.strftime('  Lista %d de %B %Y')) #Muestra la fecha de la lista de precios.
-        path=RelativePath+"/PDF/"+ListaDeArchivos[int(f)] #Genera el path del archivo para leer
-        print(path)
-        Dataframe1= pd.DataFrame(HallarDataframe(path)) #Genera el dataframe de la lista de precios que está analizando.
-        GenerarSQL(Dataframe1)
+        ListaDeFechas.append(date_time_obj)
+ListaDeFechas.sort(reverse=False)
+Resultado=map(lambda x: x.strftime("%Y%m%d Lista Distribucion.pdf"),ListaDeFechas)
+for i in list(Resultado):
+    print(str(i)) #Muestra la fecha de la lista de precios.
+    path=RelativePath+"/PDF/"+i #Genera el path del archivo para leer
+    Dataframe1 = pd.DataFrame(HallarDataframe(path)) #Genera el dataframe de la lista de precios que está analizando.
+    GenerarSQL(Dataframe1)
