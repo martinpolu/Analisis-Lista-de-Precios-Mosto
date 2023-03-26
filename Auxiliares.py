@@ -3,31 +3,40 @@ import re
 import sqlite3
 import pathlib
 import pandas as pd
-
+import datetime
 
 RelativePath=str(pathlib.Path(__file__).parent.resolve())
 from datetime import datetime
 
 separador = "\n"
 
+def checkKey(dic, key):
+    if key in dic.keys():
+        print("Present, ", end =" ")
+        print("value =", dic[key])
+    else:
+        print("Not present")
+
 
 def HallarDataframe(path):
     dict=[]
+    patternFecha="Fecha: [0-9]+/+[0-9]+/[0-9]+" #Buscamos la fecha dentro de la lista de precios
+    FechaProv1=0
     with pdfplumber.open(path) as pdf:
         for i in range(len(pdf.pages)): #Leemos todas las páginas
-            patternFecha="Fecha: [0-9]+/+[0-9]+/[0-9]+" #Buscamos la fecha dentro de la lista de precios
-            FechaProv1=0
             pagina = pdf.pages[i]
             lista = pagina.extract_text().split(separador) #Leemos cada pagina utilizando como separador el salto de linea
             for j in range(len(lista)):
                 if FechaProv1==0:
-                    FechaProv1 = re.search(patternFecha, lista[j])
-                    if FechaProv1:
-                        Fecha1 = datetime.strptime((FechaProv1.group(0)), 'Fecha: %d/%m/%Y')#Asignamos la fecha
+                    FechaProv2 = re.search(patternFecha, lista[j])
+                    if FechaProv2:
+                        FechaProv1=1
+                        Fecha1 = datetime.strptime((FechaProv2.group(0)), 'Fecha: %d/%m/%Y')#Asignamos la fecha
                 pattern = re.compile("[0-9]+.+  [0-9,.]+")#Buscamos el formato de producto y precio dentro de la lista.
                 if(pattern.match(lista[j]))!=None:
-                    a=(re.findall("[0-9]+",lista[j]))
-                    linearecor=lista[j][len(a[0])+1:]
+                    ##a=(re.findall("[0-9]+",lista[j]))
+                    ##linearecor=lista[j][len(a[0])+1:]
+                    linearecor=lista[j][5:]
                     if(Fecha1<datetime(2021,11,4)):
                         # print("CASO A") #Este caso es para la primera lista de precios
                         producto=linearecor[1:59].split("   ")[0]
@@ -60,8 +69,8 @@ def HallarDataframe(path):
                             linearecor=linearecor1
                         else:
                             linearecor[1]=linearecor[1].replace(",","")
-                        print(linearecor)
-                        dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
+                        if not any(d['Producto'] == linearecor[0] for d in dict):
+                            dict.append({"Producto":(linearecor)[0],Fecha1.strftime('%d/%m/%Y'):float(linearecor[1])})
     return dict
 
 
